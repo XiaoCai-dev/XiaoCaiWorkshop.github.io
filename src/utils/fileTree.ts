@@ -78,15 +78,12 @@ export async function buildTree(project: string): Promise<TreeNode> {
   return root;
 }
 
-/** Find a collection entry by project + file path (file has no extension). Case-insensitive. */
+/** Find a collection entry by project + file path (file has no extension). Case-insensitive.
+ *  Only matches within the given project — never falls back to another project's file. */
 export async function findEntry(project: string, file: string) {
   const entries = await listEntries();
   const target = normId(`${project}/${file}`).toLowerCase();
-  const basename = file.toLowerCase();
-  return (
-    entries.find((e) => normId(e.id).toLowerCase() === target) ??
-    entries.find((e) => normId(e.id).split('/').pop()?.toLowerCase() === basename)
-  );
+  return entries.find((e) => normId(e.id).toLowerCase() === target);
 }
 
 /** All (project, file) route params, for [project]/[...file] getStaticPaths. */

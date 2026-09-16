@@ -1,29 +1,11 @@
 [
   {
-    "slug": "kino",
-    "name": "KINO",
-    "tagline": "AI Video Agent Platform",
-    "description": "Open-source AI video Agent platform.",
-    "year": "2026",
-    "tags": [
-      "AI",
-      "Agent",
-      "Video"
-    ],
-    "github": "https://github.com/XiaoCai-dev",
-    "accent": "#6366f1"
-  },
-  {
     "slug": "jijiang",
     "name": "JIJIANG",
     "tagline": "AI Short Drama Workspace",
     "description": "AI-powered short drama production.",
     "year": "2026",
-    "tags": [
-      "AI",
-      "SaaS",
-      "Video"
-    ],
+    "tags": ["AI", "SaaS", "Video"],
     "github": "https://github.com/XiaoCai-dev",
     "accent": "#ec4899"
   }
