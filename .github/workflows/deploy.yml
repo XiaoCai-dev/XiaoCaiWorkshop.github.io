@@ -33,10 +33,6 @@ jobs:
 
       - name: Build with Astro
         run: npm run build
-        env:
-          # If deploying to a project page (https://<user>.github.io/<repo>),
-          # Astro needs the base path. Set it here instead of hardcoding.
-          # ASTRO_BASE: /${{ github.event.repository.name }}/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
