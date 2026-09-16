@@ -1,0 +1,44 @@
+---
+import { render } from 'astro:content';
+import ProjectLayout from '@/layouts/ProjectLayout.astro';
+import { allProjects, getProjectTree, getProjectEntry } from '@/utils/project';
+import type { ProjectMeta } from '@/utils/project';
+
+export async function getStaticPaths() {
+  return allProjects().map((p) => ({
+    params: { project: p.slug },
+    props: { project: p },
+  }));
+}
+
+interface Props {
+  project: ProjectMeta;
+}
+const { project } = Astro.props;
+
+const tree = await getProjectTree(project.slug);
+const entry = await getProjectEntry(project.slug, 'readme');
+const rendered = entry ? await render(entry) : null;
+const Content = rendered?.Content ?? null;
+const headings = rendered?.headings ?? [];
+const file = { name: 'README', path: `/projects/${project.slug}` };
+---
+
+<ProjectLayout
+  project={project}
+  tree={tree}
+  currentPath={file.path}
+  headings={headings}
+  file={file}
+>
+  {
+    Content ? (
+      <Content />
+    ) : (
+      <p class="text-[15px] text-muted">
+        This project doesn't have a README yet. Add <code>README.md</code> to its
+        folder in Obsidian and it will show up here.
+      </p>
+    )
+  }
+</ProjectLayout>

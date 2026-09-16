@@ -1,0 +1,90 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import FileTree from '@/components/FileTree.astro';
+import TOC from '@/components/TOC.astro';
+import type { ProjectMeta } from '@/utils/project';
+import type { TreeNode } from '@/utils/fileTree';
+import { UI, DEFAULT_LANG, t } from '@/i18n/ui';
+import { u } from '@/utils/url';
+
+const L = UI[DEFAULT_LANG];
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+interface Props {
+  project: ProjectMeta;
+  tree: TreeNode;
+  currentPath: string;
+  headings: Heading[];
+  file: { name: string; path: string };
+}
+const { project, tree, currentPath, headings, file } = Astro.props;
+---
+
+<BaseLayout footer={false} title={`${project.name} · ${file.name}`}>
+  <section class="mx-auto flex h-full min-h-0 max-w-[1360px] flex-col px-5">
+    <!-- Project header: fixed within the app shell -->
+    <div class="flex shrink-0 items-center justify-between gap-4 border-b border-line py-4">
+      <div class="min-w-0">
+        <a
+          href={u("/projects")}
+          class="mb-1 inline-block text-[12px] text-faint transition hover:text-ink"
+          data-i18n="project.backToList">{t('project.backToList')}</a
+        >
+        <h1
+          class="font-mono text-2xl font-semibold tracking-tight"
+          style={`color:${project.accent ?? 'var(--color-ink)'}`}
+        >
+          {project.name}
+        </h1>
+        <p class="mt-0.5 text-sm text-muted">{project.tagline}</p>
+      </div>
+      <a
+        href={project.github}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-mono text-[12px] text-faint transition hover:text-ink"
+      >
+        GitHub ↗
+      </a>
+    </div>
+
+    <!-- 3-column app shell: each column scrolls internally, nothing moves with the page -->
+    <div
+      class="grid min-h-0 flex-1 grid-cols-1 grid-rows-1 overflow-hidden py-6 lg:grid-cols-[240px_minmax(0,1fr)_220px] lg:gap-8"
+    >
+      <aside class="hidden min-h-0 overflow-y-auto scroll-slim pr-1 lg:block">
+        <FileTree tree={tree} currentPath={currentPath} />
+      </aside>
+
+      <article class="min-h-0 scroll-smooth overflow-y-auto scroll-slim">
+        <div class="mb-4 flex items-center gap-2 font-mono text-[12px] text-faint">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+            <path d="M14 3v6h6" />
+          </svg>
+          <span>{file.name}.md</span>
+        </div>
+        <div class="prose-doc">
+          <slot />
+        </div>
+        <div class="mt-12 border-t border-line pt-4">
+          <a
+            href={u(`/projects/${project.slug}`)}
+            class="text-[13px] text-muted transition hover:text-ink"
+          >
+            <span data-i18n="project.backToProject">{t('project.backToProject')}</span>
+            {project.name}
+          </a>
+        </div>
+      </article>
+
+      <aside class="hidden min-h-0 overflow-y-auto scroll-slim pl-1 xl:block">
+        <TOC headings={headings} />
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

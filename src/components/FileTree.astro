@@ -1,0 +1,78 @@
+---
+import type { TreeNode } from '@/utils/fileTree';
+import FileTreeNode from './FileTreeNode.astro';
+import { t } from '@/i18n/ui';
+
+interface Props {
+  tree: TreeNode;
+  currentPath: string;
+}
+const { tree, currentPath } = Astro.props;
+---
+
+<div class="pb-4">
+  <div class="sticky top-0 z-10 bg-paper pb-2 pt-1">
+    <p class="mb-2 px-1 text-[11px] font-medium uppercase tracking-wider text-faint" data-i18n="project.files">
+      {t('project.files')}
+    </p>
+    <input
+      type="search"
+      placeholder={t('project.search')}
+      data-tree-search
+      data-i18n-placeholder="project.search"
+      autocomplete="off"
+      class="w-full rounded-md border border-line bg-paper px-2.5 py-1.5 text-[13px] placeholder:text-faint focus:border-line-strong focus:outline-none"
+    />
+  </div>
+
+  <div class="scroll-slim px-1.5" data-tree-root>
+    {tree.children && tree.children.length > 0 ? (
+      tree.children.map((node) => (
+        <FileTreeNode node={node} currentPath={currentPath} />
+      ))
+    ) : (
+      <p class="px-2 py-4 text-[12px] text-faint">No files yet.</p>
+    )}
+  </div>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-tree-root]');
+  const input = document.querySelector<HTMLInputElement>('[data-tree-search]');
+  if (root && input) {
+    const files = Array.from(root.querySelectorAll<HTMLAnchorElement>('[data-tree-file]'));
+    const folders = Array.from(root.querySelectorAll<HTMLDetailsElement>('details[data-tree-folder]'));
+
+    const apply = (q: string) => {
+      const query = q.trim().toLowerCase();
+      if (!query) {
+        files.forEach((a) => (a.hidden = false));
+        folders.forEach((d) => {
+          d.hidden = false;
+          d.open = true;
+        });
+        return;
+      }
+      folders.forEach((d) => (d.open = false));
+      files.forEach((a) => {
+        const name = a.getAttribute('data-tree-file') ?? '';
+        a.hidden = !name.includes(query);
+      });
+      files.forEach((a) => {
+        if (a.hidden) return;
+        let el: Element | null = a.closest('details[data-tree-folder]');
+        while (el) {
+          (el as HTMLDetailsElement).open = true;
+          (el as HTMLElement).hidden = false;
+          el = el.parentElement?.closest('details[data-tree-folder]') ?? null;
+        }
+      });
+      folders.forEach((d) => {
+        const hasVisible = d.querySelector('a[data-tree-file]:not([hidden])');
+        d.hidden = !hasVisible;
+      });
+    };
+
+    input.addEventListener('input', (e) => apply((e.target as HTMLInputElement).value));
+  }
+</script>

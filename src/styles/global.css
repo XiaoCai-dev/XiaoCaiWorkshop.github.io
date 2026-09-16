@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --color-paper: #fafaf9;
+  --color-ink: #1c1c1c;
+  --color-muted: #6b6b6b;
+  --color-faint: #9b9b9b;
+  --color-line: #e7e5e4;
+  --color-line-strong: #d6d3d1;
+  --color-accent: #2563eb;
+  --color-accent-soft: #eff6ff;
+}
+
+/* Follow the system color scheme — override the token values in dark mode.
+   Everything else (utilities, prose, components) reads these vars and flips
+   automatically. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #0f0f10;
+    --color-ink: #e8e6e3;
+    --color-muted: #a3a3a3;
+    --color-faint: #6f6f6f;
+    --color-line: #26262a;
+    --color-line-strong: #36363c;
+    --color-accent: #60a5fa;
+    --color-accent-soft: #1b2a55;
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-paper);
+  }
+}
+
+/* Thin, subtle scrollbars for the tree / TOC panes */
+.scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+.scroll-slim::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll-slim::-webkit-scrollbar-thumb { background: var(--color-line-strong); border-radius: 4px; }
+.scroll-slim::-webkit-scrollbar-track { background: transparent; }
+
+/* Markdown reader styles */
+.prose-doc { line-height: 1.75; }
+.prose-doc h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; margin: 0.25rem 0 1.25rem; }
+.prose-doc h2 {
+  font-size: 1.2rem; font-weight: 600; letter-spacing: -0.01em;
+  margin-top: 2.25rem; margin-bottom: 0.75rem;
+  padding-bottom: 0.4rem; border-bottom: 1px solid var(--color-line);
+}
+.prose-doc h3 { font-size: 1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+.prose-doc h4 { font-size: 0.95rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+.prose-doc p { margin: 0.9rem 0; font-size: 0.95rem; }
+.prose-doc ul { list-style: disc; padding-left: 1.4rem; margin: 0.9rem 0; font-size: 0.95rem; }
+.prose-doc ol { list-style: decimal; padding-left: 1.4rem; margin: 0.9rem 0; font-size: 0.95rem; }
+.prose-doc li { margin: 0.3rem 0; }
+.prose-doc li::marker { color: var(--color-faint); }
+.prose-doc a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.prose-doc a:hover { text-decoration-thickness: 2px; }
+.prose-doc code { font-family: var(--font-mono); font-size: 0.82rem; background: color-mix(in oklab, var(--color-line) 60%, transparent); padding: 0.1rem 0.35rem; border-radius: 4px; }
+.prose-doc pre {
+  font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.6;
+  background: #0f0f0f; color: #e7e5e4; border: 1px solid var(--color-line); border-radius: 10px;
+  padding: 1rem 1.1rem; overflow-x: auto; margin: 1.1rem 0;
+}
+.prose-doc pre code { background: transparent; padding: 0; color: inherit; font-size: inherit; }
+.prose-doc blockquote { border-left: 2px solid var(--color-line-strong); padding-left: 1rem; color: var(--color-muted); font-style: italic; margin: 1rem 0; }
+.prose-doc img { border-radius: 10px; margin: 1rem 0; max-width: 100%; }
+.prose-doc hr { border: none; border-top: 1px solid var(--color-line); margin: 2rem 0; }
+.prose-doc table { width: 100%; font-size: 0.88rem; margin: 1.1rem 0; border-collapse: collapse; }
+.prose-doc th, .prose-doc td { border: 1px solid var(--color-line); padding: 0.4rem 0.6rem; text-align: left; }
+.prose-doc th { background: color-mix(in oklab, var(--color-line) 50%, transparent); font-weight: 600; }
+.prose-doc .wikilink.embed { color: var(--color-faint); font-family: var(--font-mono); font-size: 0.82rem; }
+
+/* TOC active link */
+.toc-link { color: var(--color-faint); border-left: 1px solid transparent; }
+.toc-link:hover { color: var(--color-ink); }
+.toc-link.active { color: var(--color-ink); border-left-color: var(--color-ink); font-weight: 500; }
+
+/* File tree */
+.tree-file { color: var(--color-muted); }
+.tree-file:hover { color: var(--color-ink); background: color-mix(in oklab, var(--color-line) 40%, transparent); }
+.tree-file.active { color: var(--color-accent); background: var(--color-accent-soft); }
+
+/* Language toggle */
+[data-lang-btn] { color: var(--color-faint); }
+[data-lang-btn]:hover { color: var(--color-ink); }
+[data-lang-btn][data-active="true"] { background: var(--color-ink); color: var(--color-paper); }

@@ -1,0 +1,47 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { SITE } from '@/config';
+import { UI, DEFAULT_LANG, t } from '@/i18n/ui';
+
+const L = UI[DEFAULT_LANG];
+const focus = ['AI', 'Agent', 'Backend', 'SaaS', 'Developer Tools'];
+---
+
+<BaseLayout title={t('about.label')}>
+  <section class="mx-auto max-w-2xl px-5 py-16 sm:py-20">
+    <p
+      class="mb-8 font-mono text-[12px] uppercase tracking-widest text-faint"
+      data-i18n="about.label"
+    >
+      {t('about.label')}
+    </p>
+
+    <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">
+      <span data-i18n="home.greetingPrefix">{t('home.greetingPrefix')}</span>
+      {SITE.name}<span data-i18n="home.greetingSuffix">{t('home.greetingSuffix')}</span>
+    </h1>
+    <p class="mt-3 text-lg text-muted" data-i18n="home.role">{L['home.role']}</p>
+
+    <p class="mt-6 text-[15px] leading-relaxed text-muted" data-i18n="about.body">
+      {L['about.body']}
+    </p>
+
+    <div class="mt-12">
+      <p
+        class="mb-3 text-[12px] uppercase tracking-wider text-faint"
+        data-i18n="about.exploring"
+      >
+        {t('about.exploring')}
+      </p>
+      <div class="flex flex-wrap gap-2">
+        {
+          focus.map((f) => (
+            <span class="rounded-full border border-line px-3 py-1 font-mono text-[12px] text-muted">
+              {f}
+            </span>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>

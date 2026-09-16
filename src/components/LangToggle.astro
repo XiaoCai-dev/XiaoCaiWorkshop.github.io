@@ -1,0 +1,24 @@
+---
+import { UI, DEFAULT_LANG } from '@/i18n/ui';
+---
+
+<div class="inline-flex items-center gap-0.5 rounded-full border border-line bg-paper/70 p-0.5 text-[12px] font-medium">
+  <button
+    type="button"
+    data-lang-btn="zh"
+    aria-label="中文"
+    class="rounded-full px-2 py-0.5 transition-colors"
+    data-active={DEFAULT_LANG === 'zh' ? 'true' : 'false'}
+  >
+    {UI[DEFAULT_LANG]['lang.zh']}
+  </button>
+  <button
+    type="button"
+    data-lang-btn="en"
+    aria-label="English"
+    class="rounded-full px-2 py-0.5 transition-colors"
+    data-active={DEFAULT_LANG === 'en' ? 'true' : 'false'}
+  >
+    {UI[DEFAULT_LANG]['lang.en']}
+  </button>
+</div>

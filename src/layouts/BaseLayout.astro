@@ -1,0 +1,98 @@
+---
+import '@/styles/global.css';
+import { SITE } from '@/config';
+import { DEFAULT_LANG, UI } from '@/i18n/ui';
+import PillNav from '@/components/PillNav.astro';
+import LangToggle from '@/components/LangToggle.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** When false, omit the global footer (used by the project reader app-shell). */
+  footer?: boolean;
+}
+const { title, description, footer = true } = Astro.props;
+const role = UI[DEFAULT_LANG]['home.role'];
+const pageTitle = title ? `${title} · ${SITE.name}` : `${SITE.name} — ${role}`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body class:list={["flex flex-col", footer ? "min-h-screen" : "h-screen overflow-hidden"]}>
+    <header class="sticky top-0 z-20 shrink-0 border-b border-line/60 bg-paper/80 backdrop-blur">
+      <div class="relative mx-auto flex h-14 max-w-5xl items-center justify-center px-5">
+        <PillNav />
+        <div class="absolute right-5 top-1/2 -translate-y-1/2">
+          <LangToggle />
+        </div>
+      </div>
+    </header>
+
+    <main class="min-h-0 flex-1">
+      <slot />
+    </main>
+
+    {
+      footer && (
+        <footer class="border-t border-line/60">
+          <div class="mx-auto max-w-5xl px-5 py-6 text-[12px] text-faint">
+            <span>© {new Date().getFullYear()} {SITE.name}</span>
+          </div>
+        </footer>
+      )
+    }
+
+    <script>
+      import { UI, DEFAULT_LANG, type Lang } from '@/i18n/ui';
+
+      const KEY = 'lang';
+      function getLang(): Lang {
+        const l = localStorage.getItem(KEY);
+        return l === 'en' || l === 'zh' ? l : DEFAULT_LANG;
+      }
+
+      function applyLang(lang: Lang) {
+        const dict = UI[lang];
+        document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+        document.querySelectorAll<HTMLElement>('[data-i18n]').forEach((el) => {
+          const k = el.dataset.i18n;
+          if (k && dict[k] != null) el.textContent = dict[k];
+        });
+        // Bilingual fields sourced from Markdown frontmatter (e.g. home hero).
+        document.querySelectorAll<HTMLElement>('[data-i18n-zh],[data-i18n-en]').forEach((el) => {
+          const v = el.getAttribute(`data-i18n-${lang}`) || el.getAttribute('data-i18n-zh');
+          if (v != null) el.textContent = v;
+        });
+        document.querySelectorAll<HTMLElement>('[data-i18n-placeholder]').forEach((el) => {
+          const k = el.dataset.i18nPlaceholder;
+          if (k && dict[k] != null) {
+            (el as HTMLInputElement).placeholder = dict[k];
+          }
+        });
+        document.querySelectorAll<HTMLElement>('[data-lang-btn]').forEach((b) => {
+          b.dataset.active = b.dataset.langBtn === lang ? 'true' : 'false';
+        });
+      }
+
+      function setLang(lang: Lang) {
+        localStorage.setItem(KEY, lang);
+        applyLang(lang);
+      }
+
+      applyLang(getLang());
+      document.addEventListener('click', (e) => {
+        const target = (e.target as HTMLElement)?.closest<HTMLElement>('[data-lang-btn]');
+        const v = target?.dataset.langBtn;
+        if (v === 'zh' || v === 'en') setLang(v);
+      });
+    </script>
+  </body>
+</html>

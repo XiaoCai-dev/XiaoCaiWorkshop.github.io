@@ -1,0 +1,39 @@
+---
+import { render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import ProjectLayout from '@/layouts/ProjectLayout.astro';
+import { getProjectMeta, getProjectTree } from '@/utils/project';
+import { allFileRoutes } from '@/utils/fileTree';
+
+export async function getStaticPaths() {
+  const routes = (await allFileRoutes()).filter((r) => getProjectMeta(r.params.project));
+  return routes.map((r) => ({
+    params: { project: r.params.project, file: r.params.file },
+    props: { entry: r.entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+}
+const { entry } = Astro.props;
+
+const id = entry.id.replace(/\.md$/i, '').replace(/\\/g, '/');
+const [project, ...rest] = id.split('/');
+const fileParam = rest.join('/');
+const meta = getProjectMeta(project)!;
+const tree = await getProjectTree(project);
+const { Content, headings } = await render(entry);
+const fileName = fileParam.split('/').pop() ?? fileParam;
+const currentPath = `/projects/${project}/${fileParam}`;
+---
+
+<ProjectLayout
+  project={meta}
+  tree={tree}
+  currentPath={currentPath}
+  headings={headings}
+  file={{ name: fileName, path: currentPath }}
+>
+  <Content />
+</ProjectLayout>

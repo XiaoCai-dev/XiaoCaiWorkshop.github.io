@@ -1,0 +1,35 @@
+---
+import type { ProjectMeta } from '@/utils/project';
+import { u } from '@/utils/url';
+interface Props {
+  project: ProjectMeta;
+}
+const { project } = Astro.props;
+const meta = [project.year, ...project.tags].join(' · ');
+---
+
+<a
+  href={u(`/projects/${project.slug}`)}
+  class="group block rounded-2xl border border-line bg-paper p-6 transition hover:border-line-strong hover:shadow-[0_4px_24px_rgba(0,0,0,0.05)]"
+>
+  <div class="flex items-start justify-between gap-4">
+    <div class="min-w-0">
+      <h3
+        class="font-mono text-lg font-semibold tracking-tight"
+        style={`color:${project.accent ?? 'var(--color-ink)'}`}
+      >
+        {project.name}
+      </h3>
+      <p class="mt-0.5 text-[13px] text-muted">{project.tagline}</p>
+    </div>
+    <span class="shrink-0 text-faint transition group-hover:translate-x-0.5 group-hover:text-ink">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </span>
+  </div>
+
+  <p class="mt-4 text-[14px] leading-relaxed text-muted">{project.description}</p>
+
+  <p class="mt-5 font-mono text-[12px] text-faint">{meta}</p>
+</a>

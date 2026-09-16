@@ -1,0 +1,31 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import { allProjects } from '@/utils/project';
+import { UI, DEFAULT_LANG, t } from '@/i18n/ui';
+
+const L = UI[DEFAULT_LANG];
+const projects = allProjects();
+---
+
+<BaseLayout title={t('projects.label')} description={L['projects.heading']}>
+  <section class="mx-auto max-w-3xl px-5 py-16 sm:py-20">
+    <p
+      class="mb-8 font-mono text-[12px] uppercase tracking-widest text-faint"
+      data-i18n="projects.label"
+    >
+      {t('projects.label')}
+    </p>
+
+    <h1
+      class="text-3xl font-semibold tracking-tight sm:text-4xl"
+      data-i18n="projects.heading"
+    >
+      {L['projects.heading']}
+    </h1>
+
+    <div class="mt-10 grid gap-4">
+      {projects.map((p) => <ProjectCard project={p} />)}
+    </div>
+  </section>
+</BaseLayout>

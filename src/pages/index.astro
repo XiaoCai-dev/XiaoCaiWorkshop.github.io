@@ -1,0 +1,50 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { UI, DEFAULT_LANG, t } from '@/i18n/ui';
+
+// Home hero is driven by the vault-root README.md frontmatter — edit it in Obsidian.
+const homeEntries = await getCollection('home');
+const d = (homeEntries[0]?.data ?? {}) as Record<string, any>;
+const name = typeof d.name === 'string' && d.name ? d.name : 'XiaoCai';
+const focus = Array.isArray(d.focus) ? (d.focus as string[]) : [];
+const hasHome = homeEntries.length > 0;
+---
+
+<BaseLayout>
+  <section class="mx-auto flex max-w-2xl flex-col items-center px-5 py-20 text-center sm:py-28">
+    {hasHome ? (
+      <>
+        <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl">
+          <span data-i18n="home.greetingPrefix">{t('home.greetingPrefix')}</span>{' '}{name}<span data-i18n="home.greetingSuffix">{t('home.greetingSuffix')}</span>
+        </h1>
+        <p
+          class="mt-3 text-xl text-muted sm:text-2xl"
+          data-i18n-zh={d.role_zh}
+          data-i18n-en={d.role_en}
+        >{d.role_zh}</p>
+        <p
+          class="mt-6 max-w-md text-[15px] leading-relaxed text-muted"
+          data-i18n-zh={d.tagline_zh}
+          data-i18n-en={d.tagline_en}
+        >{d.tagline_zh}</p>
+
+        <div class="mt-8 flex flex-wrap justify-center gap-2 font-mono text-[12px] text-faint">
+          {focus.map((f) => (
+            <span class="rounded-full border border-line px-2.5 py-1">{f}</span>
+          ))}
+        </div>
+
+        <p
+          class="mt-12 text-[13px] text-faint"
+          data-i18n-zh={d.welcome_zh}
+          data-i18n-en={d.welcome_en}
+        >{d.welcome_zh}</p>
+      </>
+    ) : (
+      <p class="text-center text-[15px] text-muted">
+        在 Obsidian 的 <code>My_blog/README.md</code> 写入 frontmatter 即可编辑首页。
+      </p>
+    )}
+  </section>
+</BaseLayout>

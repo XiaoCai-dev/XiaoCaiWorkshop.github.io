@@ -1,0 +1,43 @@
+---
+import type { TreeNode } from '@/utils/fileTree';
+import FileTreeNode from './FileTreeNode.astro';
+import { u } from '@/utils/url';
+
+interface Props {
+  node: TreeNode;
+  currentPath: string;
+}
+const { node, currentPath } = Astro.props;
+const isActive = node.type === 'file' && node.path === currentPath;
+---
+
+{
+  node.type === 'dir' ? (
+    <details open data-tree-folder={node.name} class="group">
+      <summary class="flex cursor-pointer select-none items-center gap-1.5 py-1 pl-2 pr-2 rounded-md text-muted hover:bg-line/40 hover:text-ink">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="transition-transform opacity-50 group-open:rotate-90">
+          <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span class="text-[12px] font-medium uppercase tracking-wide">{node.name}</span>
+      </summary>
+      <div class="ml-[7px] border-l border-line/60 pl-2">
+        {node.children?.map((child) => (
+          <FileTreeNode node={child} currentPath={currentPath} />
+        ))}
+      </div>
+    </details>
+  ) : (
+    <a
+      href={u(node.path)}
+      data-tree-file={node.name.toLowerCase()}
+      data-tree-filepath={node.path}
+      class:list={['tree-file flex items-center gap-1.5 py-1 pl-2 pr-2 rounded-md text-[13px]', isActive && 'active']}
+    >
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="opacity-40 shrink-0">
+        <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M14 3v6h6" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      <span class="truncate">{node.name}</span>
+    </a>
+  )
+}
