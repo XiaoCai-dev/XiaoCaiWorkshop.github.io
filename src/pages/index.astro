@@ -9,6 +9,9 @@ const d = (homeEntries[0]?.data ?? {}) as Record<string, any>;
 const name = typeof d.name === 'string' && d.name ? d.name : 'XiaoCai';
 const focus = Array.isArray(d.focus) ? (d.focus as string[]) : [];
 const hasHome = homeEntries.length > 0;
+const contactZh = d.contact_zh || d.contact;
+const contactEn = d.contact_en || d.contact;
+const hasContact = Boolean(contactZh || contactEn);
 ---
 
 <BaseLayout>
@@ -40,6 +43,13 @@ const hasHome = homeEntries.length > 0;
           data-i18n-zh={d.welcome_zh}
           data-i18n-en={d.welcome_en}
         >{d.welcome_zh}</p>
+        {hasContact && (
+          <p
+            class="mt-4 text-[13px] text-muted"
+            data-i18n-zh={contactZh}
+            data-i18n-en={contactEn}
+          >{contactZh}</p>
+        )}
       </>
     ) : (
       <p class="text-center text-[15px] text-muted">
