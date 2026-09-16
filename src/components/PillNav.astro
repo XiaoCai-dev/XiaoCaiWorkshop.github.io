@@ -3,7 +3,13 @@ import { NAV } from '@/config';
 import { t } from '@/i18n/ui';
 import { u } from '@/utils/url';
 
-const pathname = Astro.url.pathname.replace(/\/+$/, '') || '/';
+// Strip the configured base so active-state works under project-page deploys
+// (Astro.url.pathname includes the base prefix there).
+const base = (import.meta.env.BASE_URL ?? '/').replace(/\/$/, '');
+const rawPath = Astro.url.pathname;
+const pathname = (
+  base && rawPath.startsWith(base) ? rawPath.slice(base.length) : rawPath
+).replace(/\/+$/, '') || '/';
 function isActive(href: string) {
   if (href.startsWith('http')) return false;
   if (href === '/') return pathname === '/';
@@ -31,7 +37,7 @@ function isActive(href: string) {
           rel={'external' in item && item.external ? 'noopener noreferrer' : undefined}
           aria-current={active ? 'page' : undefined}
           class:list={[
-            'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors',
+            'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[13px] font-medium transition-colors',
             active
               ? 'bg-ink text-paper'
               : 'text-muted hover:text-ink hover:bg-line/50',
