@@ -1,25 +1,25 @@
 #!/usr/bin/env node
-// Interactive scaffolder for new projects / docs.
-//   npm run new                 # interactive
-//   npm run new -- doc kino docs/setup     # non-interactive: create a doc
-//   npm run new -- project aura              # non-interactive: create a project (uses defaults, edit after)
+// Scaffold for new projects/docs and one-shot project deletion.
+//   npm run new                              # interactive
+//   npm run new -- doc kino docs/setup       # create a doc
+//   npm run new -- project aura              # create a project (defaults)
+//   npm run delete -- jijiang                # delete a project (folder + projects.json + commit)
 //
-// Writes into the Obsidian vault (content source) and keeps projects.json in sync.
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+// Writes into the repo's content/ folder and keeps projects.json in sync.
+import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
 import readline from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-// Content lives in-repo at ./content (open it in Obsidian to edit).
 const VAULT = join(ROOT, 'content');
 const PROJECTS_JSON = join(ROOT, 'src/data/projects.json');
 const GITHUB = 'https://github.com/XiaoCai-dev';
 
 const rl = readline.createInterface({ input: stdin, output: stdout });
 const isTTY = process.stdin.isTTY;
-// In non-interactive mode (piped/args), return defaults instead of prompting.
 const ask = (q, def = '') =>
   isTTY ? rl.question(q).then((a) => a.trim() || def) : Promise.resolve(def);
 const askList = async (q, def) =>
@@ -90,10 +90,40 @@ async function newDoc(project, path) {
   console.log(`  预览: http://localhost:4321/projects/${project}/${path}`);
 }
 
+async function deleteProject(slug) {
+  slug = slug || (await ask('要删除的项目 slug: ', ''));
+  if (!slug) return console.log('已取消');
+  const projects = readProjects();
+  if (!projects.find((p) => p.slug === slug))
+    return console.log(`✗ projects.json 里没有 slug="${slug}"`);
+
+  // 1. delete the content folder
+  const dir = join(VAULT, slug);
+  if (existsSync(dir)) {
+    rmSync(dir, { recursive: true, force: true });
+    console.log(`✓ 删除文件夹 ${dir}`);
+  } else {
+    console.log(`(文件夹不存在: ${dir})`);
+  }
+  // 2. remove the projects.json entry
+  writeProjects(projects.filter((p) => p.slug !== slug));
+  console.log(`✓ 从 projects.json 移除 "${slug}"`);
+  // 3. stage + commit
+  try {
+    execSync('git add -A', { cwd: ROOT, stdio: 'ignore' });
+    execSync(`git commit -m "remove project ${slug}"`, { cwd: ROOT, stdio: 'ignore' });
+    console.log('✓ 已 git 提交');
+  } catch {
+    console.log('(git 提交跳过；请手动 git add -A && git commit)');
+  }
+  console.log('\n→ 推送上线:  git push');
+}
+
 async function main() {
   const [sub, a, b] = process.argv.slice(2);
   if (sub === 'project') return await newProject(a);
   if (sub === 'doc') return await newDoc(a, b);
+  if (sub === 'delete') return await deleteProject(a);
 
   const mode = await ask('新建  (1) 项目  (2) 文档   [1/2, 回车=2]: ', '2');
   if (mode === '1') await newProject();
