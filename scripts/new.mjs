@@ -1,11 +1,16 @@
 #!/usr/bin/env node
-// Scaffold for new projects/docs and one-shot project deletion.
-//   npm run new                              # interactive
-//   npm run new -- doc kino docs/setup       # create a doc
-//   npm run new -- project aura              # create a project (defaults)
-//   npm run delete -- jijiang                # delete a project (folder + projects.json + commit)
+// Content scaffolder: add/delete projects and docs. Keeps projects.json in sync
+// and git-commits the change; you only run `git push` to deploy.
 //
-// Writes into the repo's content/ folder and keeps projects.json in sync.
+//   npm run add-project -- <slug>                       # 新增一个项目
+//   npm run add-doc -- <project> <path>                 # 新增一篇文章到指定项目
+//   npm run del-project -- <slug>                       # 删除一整个项目
+//   npm run del-doc -- <project> <path>                 # 删除一篇文章
+//
+//   npm run new                                          # 交互式（建项目/文档）
+//   npm run delete -- <slug>                            # = del-project 的简写
+//
+// <path> 不带 .md，如 docs/setup 或 setup → /projects/<project>/docs/setup
 import { readFileSync, writeFileSync, mkdirSync, existsSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,6 +37,16 @@ function readProjects() {
 }
 function writeProjects(list) {
   writeFileSync(PROJECTS_JSON, JSON.stringify(list, null, 2) + '\n');
+}
+function gitCommit(message) {
+  try {
+    execSync('git add -A', { cwd: ROOT, stdio: 'ignore' });
+    execSync(`git commit -m ${JSON.stringify(message)}`, { cwd: ROOT, stdio: 'ignore' });
+    console.log('✓ 已 git 提交');
+  } catch {
+    console.log('(git 提交跳过；请手动 git add -A && git commit)');
+  }
+  console.log('\n→ 推送上线:  git push');
 }
 
 async function newProject(slug) {
@@ -67,7 +82,8 @@ async function newProject(slug) {
 
   console.log(`✓ 项目已创建`);
   console.log(`  文件: ${dir}`);
-  console.log(`  预览: http://localhost:4321/projects/${slug}`);
+  console.log(`  预览: /projects/${slug}`);
+  gitCommit(`add project ${slug}`);
 }
 
 async function newDoc(project, path) {
@@ -75,7 +91,7 @@ async function newDoc(project, path) {
   const slugs = projects.map((p) => p.slug);
   project = project || (await ask(`项目 (${slugs.join(' / ')}): `, slugs[0]));
   if (!projects.find((p) => p.slug === project))
-    return console.log('✗ 未知项目:', project, '— 先在 src/data/projects.json 添加');
+    return console.log('✗ 未知项目:', project, '— 先 add-project 创建');
 
   path = path || (await ask('文件路径 (如 docs/setup 或 setup): ', 'note'));
   path = path.replace(/\.md$/i, '').replace(/^\/+/, '');
@@ -87,7 +103,8 @@ async function newDoc(project, path) {
   writeFileSync(full, `# ${title}\n\nTBD.\n`);
   console.log(`✓ 文档已创建`);
   console.log(`  文件: ${full}`);
-  console.log(`  预览: http://localhost:4321/projects/${project}/${path}`);
+  console.log(`  预览: /projects/${project}/${path}`);
+  gitCommit(`add doc ${project}/${path}`);
 }
 
 async function deleteProject(slug) {
@@ -97,7 +114,6 @@ async function deleteProject(slug) {
   if (!projects.find((p) => p.slug === slug))
     return console.log(`✗ projects.json 里没有 slug="${slug}"`);
 
-  // 1. delete the content folder
   const dir = join(VAULT, slug);
   if (existsSync(dir)) {
     rmSync(dir, { recursive: true, force: true });
@@ -105,28 +121,40 @@ async function deleteProject(slug) {
   } else {
     console.log(`(文件夹不存在: ${dir})`);
   }
-  // 2. remove the projects.json entry
   writeProjects(projects.filter((p) => p.slug !== slug));
   console.log(`✓ 从 projects.json 移除 "${slug}"`);
-  // 3. stage + commit
-  try {
-    execSync('git add -A', { cwd: ROOT, stdio: 'ignore' });
-    execSync(`git commit -m "remove project ${slug}"`, { cwd: ROOT, stdio: 'ignore' });
-    console.log('✓ 已 git 提交');
-  } catch {
-    console.log('(git 提交跳过；请手动 git add -A && git commit)');
-  }
-  console.log('\n→ 推送上线:  git push');
+  gitCommit(`remove project ${slug}`);
+}
+
+async function deleteDoc(project, path) {
+  const projects = readProjects();
+  const slugs = projects.map((p) => p.slug);
+  project = project || (await ask(`项目 (${slugs.join(' / ')}): `, slugs[0]));
+  path = path || (await ask('文件路径 (如 docs/setup 或 setup): ', 'note'));
+  path = path.replace(/\.md$/i, '').replace(/^\/+/, '');
+  const full = join(VAULT, project, path + '.md');
+  if (!existsSync(full)) return console.log('✓ 文件不存在:', full);
+
+  rmSync(full, { force: true });
+  console.log(`✓ 删除文件 ${full}`);
+  gitCommit(`remove doc ${project}/${path}`);
 }
 
 async function main() {
-  const [sub, a, b] = process.argv.slice(2);
+  const [sub, a, b, c] = process.argv.slice(2);
   if (sub === 'project') return await newProject(a);
   if (sub === 'doc') return await newDoc(a, b);
-  if (sub === 'delete') return await deleteProject(a);
+  if (sub === 'delete') {
+    if (a === 'doc') return await deleteDoc(b, c); // delete doc <project> <path>
+    if (a === 'project') return await deleteProject(b); // delete project <slug>
+    return await deleteProject(a); // delete <slug> (project shorthand)
+  }
 
-  const mode = await ask('新建  (1) 项目  (2) 文档   [1/2, 回车=2]: ', '2');
+  // interactive
+  const mode = await ask('操作  (1) 加项目  (2) 加文档  (3) 删项目  (4) 删文档  [1-4]: ', '2');
   if (mode === '1') await newProject();
+  else if (mode === '3') await deleteProject();
+  else if (mode === '4') await deleteDoc();
   else await newDoc();
   rl.close();
 }
