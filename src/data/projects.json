@@ -8,5 +8,15 @@
     "tags": ["AI", "SaaS", "Video"],
     "github": "https://github.com/XiaoCai-dev",
     "accent": "#ec4899"
+  },
+  {
+    "slug": "xianyu_rag_agent",
+    "name": "Xianyu RAG Agent",
+    "tagline": "闲鱼智能客服系统",
+    "description": "基于 LLM 的闲鱼智能客服，集成多专家 Agent 路由、RAG 知识库与可视化管控平台。",
+    "year": "2026",
+    "tags": ["AI", "Agent", "RAG", "LLM"],
+    "github": "https://github.com/XiaoCai-dev",
+    "accent": "#10b981"
   }
 ]
